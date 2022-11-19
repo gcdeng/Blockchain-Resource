@@ -97,25 +97,35 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
         uint256 totalSupply = totalSupply();
 
         // calculate liquidity and actually amount of token added
+        // 計算方式參考 UniswapV2Pair.sol
         if (totalSupply == 0) {
+            // 池子還是空的
             liquidity = Math.sqrt(amountAIn.mul(amountBIn));
             amountA = amountAIn;
             amountB = amountBIn;
         } else {
             liquidity = Math.min((amountAIn.mul(totalSupply)) / reserveA, (amountBIn.mul(totalSupply)) / reserveB);
+            // 實際可轉進的數量 = 池子中的token比例 * liquidity
             amountA = (liquidity.mul(reserveA)) / totalSupply;
             amountB = (liquidity.mul(reserveB)) / totalSupply;
         }
 
         require(liquidity > 0, "SimpleSwap: INSUFFICIENT_LIQUIDITY_MINTED");
 
+        // 更新池子中的token數量
         reserveA += amountA;
         reserveB += amountB;
+
+        // update K
         kLast = reserveA.mul(reserveB);
 
+        // intersactions
+        // transfer tokens from maker
         ERC20(tokenA).transferFrom(msg.sender, address(this), amountA);
         ERC20(tokenB).transferFrom(msg.sender, address(this), amountB);
-        _mint(msg.sender, liquidity); // mint LP token to maker
+
+        // mint LP token to maker
+        _mint(msg.sender, liquidity);
 
         emit AddLiquidity(msg.sender, amountA, amountB, liquidity);
     }
@@ -125,19 +135,22 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
     /// @return amountA The amount of tokenA received
     /// @return amountB The amount of tokenB received
     function removeLiquidity(uint256 liquidity) external override returns (uint256 amountA, uint256 amountB) {
+        // check liquidity
         require(liquidity > 0, "SimpleSwap: INSUFFICIENT_LIQUIDITY_BURNED");
 
+        // calculate amount of token received
         uint256 totalSupply = totalSupply();
-
-        // calculate amount of token pair
         amountA = (liquidity.mul(reserveA)).div(totalSupply);
         amountB = (liquidity.mul(reserveB)).div(totalSupply);
 
+        // 更新池子中的token數量
         reserveA -= amountA;
         reserveB -= amountB;
+
+        // update K
         kLast = reserveA.mul(reserveB);
 
-        // transfer token pair to maker
+        // transfer tokens to maker
         ERC20(tokenA).transfer(msg.sender, amountA);
         ERC20(tokenB).transfer(msg.sender, amountB);
 
