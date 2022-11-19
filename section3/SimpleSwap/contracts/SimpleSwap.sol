@@ -31,7 +31,6 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
         reserveB = ERC20(tokenB).balanceOf(address(this));
     }
 
-    // Implement core logic here
     /// @notice Swap tokenIn for tokenOut with amountIn
     /// @param tokenIn The address of the token to swap from
     /// @param tokenOut The address of the token to swap to
