@@ -7,7 +7,7 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract SimpleSwap is ISimpleSwap, ERC20 {
     using SafeMath for uint256;
@@ -58,7 +58,7 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
         uint256 reserveTokenIn = ERC20(tokenIn).balanceOf(address(this));
         uint256 reserveTokenOut = ERC20(tokenOut).balanceOf(address(this));
         // X * Y = K -> (reserveTokenIn + amountIn) * (reserveTokenOut - amountOut) = kLast
-        // amountOut = reserveTokenOut.sub(kLast.div(reserveTokenIn.add(amountIn))); 一開始用這個算法會因為精度不足算錯
+        // amountOut = reserveTokenOut.sub(kLast.div(reserveTokenIn.add(amountIn))); 一開始用這個算法會因為精度不足算出1而不是0
         uint256 newReseveTokenIn = reserveTokenIn.add(amountIn);
         amountOut = ((newReseveTokenIn.mul(reserveTokenOut)).sub(kLast)).div(newReseveTokenIn);
 
