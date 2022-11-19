@@ -58,7 +58,10 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
         uint256 reserveTokenIn = ERC20(tokenIn).balanceOf(address(this));
         uint256 reserveTokenOut = ERC20(tokenOut).balanceOf(address(this));
         // X * Y = K -> (reserveTokenIn + amountIn) * (reserveTokenOut - amountOut) = kLast
-        amountOut = reserveTokenOut.sub(kLast.div(reserveTokenIn.add(amountIn)));
+        // amountOut = reserveTokenOut.sub(kLast.div(reserveTokenIn.add(amountIn))); 一開始用這個算法會因為精度不足算錯
+        uint256 newReseveTokenIn = reserveTokenIn.add(amountIn);
+        amountOut = ((newReseveTokenIn.mul(reserveTokenOut)).sub(kLast)).div(newReseveTokenIn);
+
         // check amountOut
         require(amountOut > 0, "SimpleSwap: INSUFFICIENT_OUTPUT_AMOUNT");
 
